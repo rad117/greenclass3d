@@ -1,0 +1,86 @@
+- generic [ref=e1]:
+  - generic:
+    - paragraph: Green Class AI — Rev. 1 prototype
+    - heading "Sense · decide · act — mounted on the classroom wall" [level=1]
+    - paragraph: Four sensors wired back to an ESP32 + relay hub, each mounted where a real install would put it — PIR in the corner for full coverage, light sensor by the window, temp and air-quality sensors clear of drafts — not all crammed into one box. Drag to orbit, scroll to zoom, click any part to inspect it — or toggle a person into the room in the panel below and watch the lights and AC respond.
+  - generic [ref=e4]:
+    - button "Reset view" [ref=e5] [cursor=pointer]
+    - button "Focus hub" [ref=e6] [cursor=pointer]
+    - button "Auto-rotate" [ref=e7] [cursor=pointer]
+    - generic [ref=e8]: drag to orbit · scroll to zoom · click a desk to seat someone
+  - generic [ref=e9]:
+    - generic [ref=e10]:
+      - heading "Components" [level=2] [ref=e11]
+      - list [ref=e12]:
+        - listitem [ref=e13] [cursor=pointer]:
+          - generic [ref=e14]: "01"
+          - generic [ref=e16]: ESP32-WROOM-32 (DevKit V1)
+        - listitem [ref=e17] [cursor=pointer]:
+          - generic [ref=e18]: "02"
+          - generic [ref=e20]: PIR — HC-SR501
+        - listitem [ref=e21] [cursor=pointer]:
+          - generic [ref=e22]: "03"
+          - generic [ref=e24]: LDR module (LM393 / KY-018)
+        - listitem [ref=e25] [cursor=pointer]:
+          - generic [ref=e26]: "04"
+          - generic [ref=e28]: DHT11
+        - listitem [ref=e29] [cursor=pointer]:
+          - generic [ref=e30]: "05"
+          - generic [ref=e32]: MQ-135
+        - listitem [ref=e33] [cursor=pointer]:
+          - generic [ref=e34]: "06"
+          - generic [ref=e36]: 4-channel relay (SRD-05VDC-SL-C)
+    - generic [ref=e37]:
+      - heading "Live logic" [level=2] [ref=e38]
+      - 'button "Person in room: OFF" [ref=e39] [cursor=pointer]'
+      - generic [ref=e40]:
+        - button "Brighten +15%" [ref=e41] [cursor=pointer]
+        - button "Dim -15%" [ref=e42] [cursor=pointer]
+      - generic [ref=e43]:
+        - button "Heat room +2°" [ref=e44] [cursor=pointer]
+        - button "Cool room -2°" [ref=e45] [cursor=pointer]
+        - 'button "AC: Auto" [ref=e46] [cursor=pointer]'
+      - generic [ref=e47]:
+        - generic [ref=e48]: VACANT
+        - generic [ref=e49]: 0/12 SEATED
+        - generic [ref=e50]: LIGHTS OFF
+        - generic [ref=e51]: DAYLIGHT 55% BRIGHT
+        - generic [ref=e52]: FAN 0/5
+        - generic [ref=e53]: AC OFF
+        - generic [ref=e54]: 23.0°C
+      - paragraph [ref=e55]: AC threshold 28°C while vacant
+      - paragraph [ref=e56]
+      - heading "Scenarios" [level=2] [ref=e57]
+      - generic [ref=e58]:
+        - button "Empty room" [ref=e59] [cursor=pointer]
+        - button "2 in bottom-right" [ref=e60] [cursor=pointer]
+        - button "Middle only" [ref=e61] [cursor=pointer]
+        - button "Scattered (1/zone)" [ref=e62] [cursor=pointer]
+  - generic [ref=e63]:
+    - generic [ref=e64]: "4"
+    - generic [ref=e65]:
+      - paragraph [ref=e66]: Temp / humidity sensor
+      - paragraph [ref=e67]: DHT11
+      - paragraph [ref=e68]: 0–50°C ±2°C, 20–90% RH ±5%, digital single-wire. Mounted on the interior wall, away from the window's direct sun and the AC unit's cold draft, so its reading reflects the room's actual average instead of one hot or cold spot.
+      - paragraph [ref=e69]: ₹90
+    - button "Close" [active] [ref=e70] [cursor=pointer]: ×
+  - generic: Loading scene…
+  - generic:
+    - generic [ref=e71] [cursor=pointer]:
+      - generic [ref=e72]: "01"
+      - generic [ref=e73]: ESP32
+    - generic [ref=e74] [cursor=pointer]:
+      - generic [ref=e75]: "02"
+      - generic [ref=e76]: PIR
+    - generic [ref=e77] [cursor=pointer]:
+      - generic [ref=e78]: "03"
+      - generic [ref=e79]: LDR
+    - generic [ref=e80] [cursor=pointer]:
+      - generic [ref=e81]: "04"
+      - generic [ref=e82]: DHT11
+    - generic [ref=e83] [cursor=pointer]:
+      - generic [ref=e84]: "05"
+      - generic [ref=e85]: MQ-135
+    - generic [ref=e86] [cursor=pointer]:
+      - generic [ref=e87]: "06"
+      - generic [ref=e88]: Relay

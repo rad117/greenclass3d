@@ -1,0 +1,76 @@
+- generic [ref=f4e1]:
+  - generic:
+    - paragraph: Green Class AI — Rev. 1 prototype
+    - heading "Sense · decide · act — mounted on the classroom wall" [level=1]
+    - paragraph: Four sensors wired back to an ESP32 + relay hub, each mounted where a real install would put it — PIR in the corner for full coverage, light sensor by the window, temp and air-quality sensors clear of drafts — not all crammed into one box. Drag to orbit, scroll to zoom, click any part to inspect it — or toggle a person into the room in the panel below and watch the lights and AC respond.
+  - generic [ref=f4e4]:
+    - heading "Components" [level=2] [ref=f4e5]
+    - list [ref=f4e6]:
+      - listitem [ref=f4e7] [cursor=pointer]:
+        - generic [ref=f4e8]: "01"
+        - generic [ref=f4e10]: ESP32-WROOM-32 (DevKit V1)
+      - listitem [ref=f4e11] [cursor=pointer]:
+        - generic [ref=f4e12]: "02"
+        - generic [ref=f4e14]: PIR — HC-SR501
+      - listitem [ref=f4e15] [cursor=pointer]:
+        - generic [ref=f4e16]: "03"
+        - generic [ref=f4e18]: LDR module (LM393 / KY-018)
+      - listitem [ref=f4e19] [cursor=pointer]:
+        - generic [ref=f4e20]: "04"
+        - generic [ref=f4e22]: DHT11
+      - listitem [ref=f4e23] [cursor=pointer]:
+        - generic [ref=f4e24]: "05"
+        - generic [ref=f4e26]: MQ-135
+      - listitem [ref=f4e27] [cursor=pointer]:
+        - generic [ref=f4e28]: "06"
+        - generic [ref=f4e30]: 4-channel relay (SRD-05VDC-SL-C)
+  - generic [ref=f4e31]:
+    - button "Reset view" [ref=f4e32] [cursor=pointer]
+    - button "Focus hub" [ref=f4e33] [cursor=pointer]
+    - button "Auto-rotate" [ref=f4e34] [cursor=pointer]
+    - generic [ref=f4e35]: drag to orbit · scroll to zoom · click a desk to seat someone
+  - generic [ref=f4e36]:
+    - heading "Live logic" [level=2] [ref=f4e37]
+    - 'button "Person in room: ON" [active] [ref=f4e80] [cursor=pointer]'
+    - generic [ref=f4e39]:
+      - button "Room dim" [ref=f4e40] [cursor=pointer]
+      - button "Heat room +2°" [ref=f4e41] [cursor=pointer]
+      - button "Cool room -2°" [ref=f4e42] [cursor=pointer]
+    - 'button "AC: Auto" [ref=f4e44] [cursor=pointer]'
+    - generic [ref=f4e45]:
+      - generic [ref=f4e46]: OCCUPIED
+      - generic [ref=f4e47]: 12/12 SEATED
+      - generic [ref=f4e48]: LIGHTS ON
+      - generic [ref=f4e49]: FAN 0/4
+      - generic [ref=f4e50]: AC OFF
+      - generic [ref=f4e51]: 24.3°C
+    - paragraph [ref=f4e52]: AC threshold 25°C while occupied
+    - paragraph [ref=f4e53]
+  - generic [ref=f4e54]:
+    - generic [ref=f4e55]: "1"
+    - generic [ref=f4e56]:
+      - paragraph [ref=f4e57]: Role
+      - paragraph [ref=f4e58]: Part name
+      - paragraph [ref=f4e59]: Spec text.
+      - paragraph [ref=f4e60]: ₹0
+    - button "Close" [ref=f4e61] [cursor=pointer]: ×
+  - generic: Loading scene…
+  - generic:
+    - generic [ref=f4e62] [cursor=pointer]:
+      - generic [ref=f4e63]: "01"
+      - generic [ref=f4e64]: ESP32
+    - generic [ref=f4e65] [cursor=pointer]:
+      - generic [ref=f4e66]: "02"
+      - generic [ref=f4e67]: PIR
+    - generic [ref=f4e68] [cursor=pointer]:
+      - generic [ref=f4e69]: "03"
+      - generic [ref=f4e70]: LDR
+    - generic [ref=f4e71] [cursor=pointer]:
+      - generic [ref=f4e72]: "04"
+      - generic [ref=f4e73]: DHT11
+    - generic [ref=f4e74] [cursor=pointer]:
+      - generic [ref=f4e75]: "05"
+      - generic [ref=f4e76]: MQ-135
+    - generic [ref=f4e77] [cursor=pointer]:
+      - generic [ref=f4e78]: "06"
+      - generic [ref=f4e79]: Relay

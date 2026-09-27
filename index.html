@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Green Class AI — 3D Classroom Model</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="canvas-wrap"></div>
+
+  <div class="masthead">
+    <p class="eyebrow">Green Class AI — Rev. 1 prototype</p>
+    <h1>Sense &middot; decide &middot; act &mdash; mounted on the classroom wall</h1>
+    <p>Four sensors wired back to an ESP32 + relay hub, each mounted where a real install would put it &mdash; PIR in the corner for full coverage, light sensor by the window, temp and air-quality sensors clear of drafts &mdash; not all crammed into one box. Drag to orbit, scroll to zoom, click any part to inspect it &mdash; or toggle a person into the room in the panel below and watch the lights and AC respond.</p>
+  </div>
+
+  <div class="controls">
+    <button class="ctrl-btn" id="resetBtn" type="button">Reset view</button>
+    <button class="ctrl-btn" id="focusBtn" type="button">Focus hub</button>
+    <button class="ctrl-btn" id="rotateBtn" type="button">Auto-rotate</button>
+    <span class="hint">drag to orbit &middot; scroll to zoom &middot; click a desk to seat someone</span>
+  </div>
+
+  <div class="right-rail">
+    <div class="legend">
+      <h2>Components</h2>
+      <ul id="legendList"></ul>
+    </div>
+
+    <div class="sim-panel">
+    <h2>Live logic</h2>
+    <button class="ctrl-btn wide" id="personBtn" type="button">Person in room: OFF</button>
+    <div class="cond-row">
+      <button class="chip" id="brightenBtn" type="button">Brighten +15%</button>
+      <button class="chip" id="dimBtn" type="button">Dim -15%</button>
+    </div>
+    <div class="cond-row">
+      <button class="chip" id="heatBtn" type="button">Heat room +2&deg;</button>
+      <button class="chip" id="coolBtn" type="button">Cool room -2&deg;</button>
+      <button class="chip" id="acModeBtn" type="button">AC: Auto</button>
+    </div>
+    <div class="pill-row">
+      <span class="pill" id="pillOcc">VACANT</span>
+      <span class="pill" id="pillSeats">0/30 SEATED</span>
+      <span class="pill" id="pillLights">LIGHTS OFF</span>
+      <span class="pill" id="pillLight">DAYLIGHT 55% BRIGHT</span>
+      <span class="pill" id="pillFan">FAN 0/5</span>
+      <span class="pill" id="pillAc">AC OFF</span>
+      <span class="pill" id="pillTemp">24.0&deg;C</span>
+    </div>
+    <p class="sim-note" id="acNote"></p>
+    <p class="sim-note" id="simNote"></p>
+    <h2>Scenarios</h2>
+    <div class="cond-row">
+      <button class="chip" id="scenEmptyBtn" type="button">Empty room</button>
+      <button class="chip" id="scenBottomRightBtn" type="button">2 in bottom-right</button>
+      <button class="chip" id="scenMiddleBtn" type="button">Middle only</button>
+      <button class="chip" id="scenScatteredBtn" type="button">Scattered (1/zone)</button>
+    </div>
+    </div>
+  </div>
+
+  <div class="spec-strip" id="specStrip">
+    <div class="spec-num" id="specNum">1</div>
+    <div class="spec-body">
+      <p class="spec-role" id="specRole">Role</p>
+      <p class="spec-name" id="specName">Part name</p>
+      <p class="spec-text" id="specText">Spec text.</p>
+      <p class="spec-price" id="specPrice">₹0</p>
+    </div>
+    <button class="spec-close" id="specClose" type="button" aria-label="Close">&times;</button>
+  </div>
+
+  <div class="loading" id="loading">Loading scene&hellip;</div>
+
+  <script src="vendor/three.min.js"></script>
+  <script src="vendor/OrbitControls.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>

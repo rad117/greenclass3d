@@ -1,0 +1,70 @@
+- generic [ref=e1]:
+  - generic:
+    - paragraph: Green Class AI — Rev. 1 prototype
+    - heading "Sense · decide · act — mounted on the classroom wall" [level=1]
+    - paragraph: Four sensors and a relay module wired to an ESP32, watching over the room and streaming live readings to a cloud dashboard. Drag to orbit, scroll to zoom, click any part to inspect it — or toggle a person into the room in the panel below and watch the lights and fan respond.
+  - generic [ref=e4]:
+    - heading "Components" [level=2] [ref=e5]
+    - list [ref=e6]:
+      - listitem [ref=e7] [cursor=pointer]:
+        - generic [ref=e8]: "01"
+        - generic [ref=e10]: ESP32-WROOM-32 (DevKit V1)
+      - listitem [ref=e11] [cursor=pointer]:
+        - generic [ref=e12]: "02"
+        - generic [ref=e14]: PIR — HC-SR501
+      - listitem [ref=e15] [cursor=pointer]:
+        - generic [ref=e16]: "03"
+        - generic [ref=e18]: LDR module (LM393 / KY-018)
+      - listitem [ref=e19] [cursor=pointer]:
+        - generic [ref=e20]: "04"
+        - generic [ref=e22]: DHT11
+      - listitem [ref=e23] [cursor=pointer]:
+        - generic [ref=e24]: "05"
+        - generic [ref=e26]: MQ-135
+      - listitem [ref=e27] [cursor=pointer]:
+        - generic [ref=e28]: "06"
+        - generic [ref=e30]: 4-channel relay (SRD-05VDC-SL-C)
+  - generic [ref=e31]:
+    - button "Reset view" [ref=e32] [cursor=pointer]
+    - button "Focus device" [ref=e33] [cursor=pointer]
+    - button "Auto-rotate" [ref=e34] [cursor=pointer]
+    - generic [ref=e35]: drag to orbit · scroll to zoom
+  - generic [ref=e36]:
+    - heading "Live logic" [level=2] [ref=e37]
+    - 'button "Person in room: ON" [active] [ref=e73] [cursor=pointer]'
+    - generic [ref=e39]:
+      - button "Room dim" [ref=e40] [cursor=pointer]
+      - button "Room warm" [ref=e41] [cursor=pointer]
+    - generic [ref=e42]:
+      - generic [ref=e43]: OCCUPIED
+      - generic [ref=e44]: LIGHTS ON
+      - generic [ref=e45]: FAN ON
+    - paragraph [ref=e46]
+  - generic [ref=e47]:
+    - generic [ref=e48]: "1"
+    - generic [ref=e49]:
+      - paragraph [ref=e50]: Role
+      - paragraph [ref=e51]: Part name
+      - paragraph [ref=e52]: Spec text.
+      - paragraph [ref=e53]: ₹0
+    - button "Close" [ref=e54] [cursor=pointer]: ×
+  - generic: Loading scene…
+  - generic:
+    - generic [ref=e55] [cursor=pointer]:
+      - generic [ref=e56]: "01"
+      - generic [ref=e57]: ESP32
+    - generic [ref=e58] [cursor=pointer]:
+      - generic [ref=e59]: "02"
+      - generic [ref=e60]: PIR
+    - generic [ref=e61] [cursor=pointer]:
+      - generic [ref=e62]: "03"
+      - generic [ref=e63]: LDR
+    - generic [ref=e64] [cursor=pointer]:
+      - generic [ref=e65]: "04"
+      - generic [ref=e66]: DHT11
+    - generic [ref=e67] [cursor=pointer]:
+      - generic [ref=e68]: "05"
+      - generic [ref=e69]: MQ-135
+    - generic [ref=e70] [cursor=pointer]:
+      - generic [ref=e71]: "06"
+      - generic [ref=e72]: Relay
