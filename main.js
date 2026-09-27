@@ -198,39 +198,42 @@
     scene.add(g);
     return g;
   }
-  // A full classroom grid — 6 rows x 5 columns with a center aisle column, the way an
-  // actual classroom is laid out — split into 5 named fan zones by quadrant (the aisle
-  // column is its own "Center" zone). Same zone names/count as before, so every scenario
-  // button and the per-zone fan logic keep working unchanged; there are just more desks
-  // filling out each zone now.
-  const ZONE_NAMES = ['Back-left', 'Back-right', 'Front-left', 'Front-right', 'Center'];
-  const DESK_COLS = [-480, -240, 0, 240, 480];
-  const DESK_ROWS = [-400, -240, -80, 80, 240, 400];
+  // Five physical classroom rows. Each row is its own control zone so the demo can
+  // prove that the system reacts to WHERE students are sitting, not just whether
+  // somebody is somewhere in the room. Six seats per row = 30 seats total.
+  const ZONE_NAMES = ['Row 1', 'Row 2', 'Row 3', 'Row 4', 'Row 5'];
+  const DESK_COLS = [-500, -300, -100, 100, 300, 500];
+  const DESK_ROWS = [-360, -180, 0, 180, 360];
   const DESKS = [];
-  DESK_ROWS.forEach(z => {
-    DESK_COLS.forEach(x => {
-      let zone;
-      if (x === 0) zone = 4;                 // center aisle
-      else if (z < 0) zone = x < 0 ? 0 : 1;   // back-left / back-right
-      else zone = x < 0 ? 2 : 3;              // front-left / front-right ("bottom-right")
-      DESKS.push({ x, z, zone });
-    });
+  DESK_ROWS.forEach((z, row) => {
+    DESK_COLS.forEach(x => DESKS.push({ x, z, zone: row, row }));
   });
   DESKS.forEach((d, i) => desk(d.x, d.z, i));
 
-  // wall-mounted split AC — turns on together with the fan relay
-  const acGroup = new THREE.Group();
-  acGroup.position.set(-260, 232, ROOM.backZ + 4);
-  scene.add(acGroup);
-  const acBodyMat = new THREE.MeshStandardMaterial({ color: 0xf2f4f0, roughness: 0.45 });
-  acGroup.add(box(120, 32, 26, acBodyMat));
-  const acVentMat = new THREE.MeshStandardMaterial({ color: 0xd7dbd6, roughness: 0.5, emissive: 0x000000 });
-  const acVent = box(104, 7, 3, acVentMat); acVent.position.set(0, -11, 14); acGroup.add(acVent);
-  const acLedMat = new THREE.MeshStandardMaterial({ color: 0x123018, roughness: 0.4, emissive: 0x000000 });
-  const acLed = box(4, 3, 2, acLedMat); acLed.position.set(52, 10, 14); acGroup.add(acLed);
+  // Visual row boundaries + labels make the zoning obvious in the 3D model.
+  const rowBandMat = new THREE.MeshStandardMaterial({ color: 0x8fe0a8, transparent: true, opacity: 0.055, roughness: 1 });
+  const rowLineMat = new THREE.MeshBasicMaterial({ color: 0x8fe0a8, transparent: true, opacity: 0.30 });
+  function makeTextSprite(text, color = '#9df0b5') {
+    const c = document.createElement('canvas'); c.width = 256; c.height = 64;
+    const ctx = c.getContext('2d'); ctx.font = '700 26px Arial'; ctx.fillStyle = color;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(text, 128, 32);
+    const tex = new THREE.CanvasTexture(c);
+    const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false });
+    const sp = new THREE.Sprite(mat); sp.scale.set(150, 38, 1); return sp;
+  }
+  DESK_ROWS.forEach((z, row) => {
+    const band = box(1220, 1.5, 130, rowBandMat); band.position.set(0, 1.5, z); scene.add(band);
+    const label = makeTextSprite(ZONE_NAMES[row].toUpperCase());
+    label.position.set(-650, 92, z - 55); scene.add(label);
+  });
 
-  // ceiling fans — one per named desk cluster/zone, real geometry spun by rotation.y each
-  // frame. Zoning means a fan only needs to run over a cluster that actually has someone in it.
+  // ---------- zoned HVAC + lighting ----------
+  // Each classroom row is a control zone. Hardware is deliberately distributed
+  // across the ceiling/walls so the 3D model reads like a real installation.
+  const ZONE_SEATS = ZONE_NAMES.map((_, zoneIdx) =>
+    DESKS.map((_, i) => i).filter(i => DESKS[i].zone === zoneIdx)
+  );
+
   function makeFan(x, z) {
     const pos = new THREE.Vector3(x, ROOM.wallH - 16, z);
     const rod = cyl(3, 50, M.fanRod, 10);
@@ -238,24 +241,48 @@
     scene.add(rod);
     const group = new THREE.Group();
     group.position.copy(pos);
-    group.add(box(130, 3, 14, M.fanBlade), box(14, 3, 130, M.fanBlade));
+    group.add(box(105, 3, 12, M.fanBlade), box(12, 3, 105, M.fanBlade));
     scene.add(group);
-    return { group, speed: 0, targetSpeed: 0 };
+    return { group, speed: 0, targetSpeed: 0, zone: DESK_ROWS.findIndex(v => v === z) };
   }
-  const ZONE_SEATS = ZONE_NAMES.map((_, zoneIdx) =>
-    DESKS.map((_, i) => i).filter(i => DESKS[i].zone === zoneIdx)
-  );
-  const fans = ZONE_SEATS.map(seatIdxs => {
-    const cx = seatIdxs.reduce((s, i) => s + DESKS[i].x, 0) / seatIdxs.length;
-    const cz = seatIdxs.reduce((s, i) => s + DESKS[i].z, 0) / seatIdxs.length;
-    return makeFan(cx, cz);
+
+  // Two fans per row, offset left/right instead of one fan at the row centre.
+  const fans = [];
+  DESK_ROWS.forEach((z, zoneIdx) => {
+    [-300, 300].forEach(x => {
+      const fan = makeFan(x, z);
+      fan.zone = zoneIdx;
+      fans.push(fan);
+    });
   });
 
-  // ceiling light fixture — real PointLight + an emissive disc
-  const fixtureMesh = cyl(30, 6, M.fixture, 28);
-  fixtureMesh.position.set(-140, ROOM.wallH - 8, 150);
-  scene.add(fixtureMesh);
-  fixtureLight.position.set(-140, ROOM.wallH - 20, 150);
+  // Two distributed light fixtures per row. Each fixture follows the row zone.
+  const rowLights = [];
+  DESK_ROWS.forEach((z, rowIdx) => {
+    [-300, 300].forEach(x => {
+      const mesh = cyl(30, 5, M.fixture, 28); mesh.position.set(x, ROOM.wallH - 8, z); scene.add(mesh);
+      const light = new THREE.PointLight(0xfff6d6, 0, 430, 1.5); light.position.set(x, ROOM.wallH - 20, z); scene.add(light);
+      rowLights.push({ mesh, light, target: 0, zone: rowIdx });
+    });
+  });
+
+  // Five small AC units are mounted along the right wall — one per row/zone.
+  const acZones = DESK_ROWS.map((z, rowIdx) => {
+    const group = new THREE.Group();
+    group.position.set(ROOM.halfW - 18, 228, z);
+    const bodyMat = new THREE.MeshStandardMaterial({ color: 0xf2f4f0, roughness: 0.45 });
+    const ventMat = new THREE.MeshStandardMaterial({ color: 0xd7dbd6, roughness: 0.5, emissive: 0x000000 });
+    const ledMat = new THREE.MeshStandardMaterial({ color: 0x123018, roughness: 0.4, emissive: 0x000000 });
+    const body = box(26, 30, 120, bodyMat); group.add(body);
+    const vent = box(3, 7, 104, ventMat); vent.position.set(-14, -10, 0); group.add(vent);
+    const led = box(2, 3, 4, ledMat); led.position.set(-15, 10, 48); group.add(led);
+    scene.add(group);
+    return { group, bodyMat, ventMat, ledMat, target: 0, zone: rowIdx };
+  });
+
+  // Keep a reference to a representative fixture for the legacy relay animation.
+  const fixtureMesh = rowLights[4].mesh;
+  fixtureLight.position.set(0, ROOM.wallH - 20, DESK_ROWS[2]);
 
   // occupants — appear at the desks while "Person in room" is on
   const PERSON_COLORS = [
@@ -653,6 +680,7 @@
   let personIn = false, occupied = false;
   let roomTemp = 24;
   let naturalLight = LIGHT_BASE;
+  let airQualityRisk = false; // demo-only alert state for the MQ gas-sensor use case
   let acOverride = null; // null = automatic (threshold-driven), true/false = manual override
   let lastMotion = 0, pulseInterval = null;
   let manualOverride = new Array(DESKS.length).fill(null); // per-seat: null = follow personIn, true/false = explicit click override
@@ -674,6 +702,7 @@
   const pillTemp = document.getElementById('pillTemp');
   const simNote = document.getElementById('simNote');
   const acNote = document.getElementById('acNote');
+  const rowStatus = document.getElementById('rowStatus');
 
   function setLed(mesh, active) {
     mesh.material.emissive.setHex(active ? 0x4caf50 : 0x000000);
@@ -733,38 +762,64 @@
     pillOcc.classList.toggle('on', roomOccupied);
     pillSeats.textContent = seated + '/' + DESKS.length + ' SEATED';
     pillSeats.classList.toggle('on', seated > 0);
+
+    const zoneStates = ZONE_SEATS.map((seatIdxs, rowIdx) => ({
+      count: seatIdxs.filter(seatOn).length,
+      occupied: seatIdxs.some(seatOn),
+      cooling: seatIdxs.some(seatOn) && needsCooling
+    }));
+    if (rowStatus) {
+      rowStatus.innerHTML = zoneStates.map((z, rowIdx) => {
+        return `<div class="row-chip ${z.occupied ? 'on' : ''}"><strong>R${rowIdx + 1}</strong>${z.count}/6 students<br>${z.cooling ? 'HVAC ON' : z.occupied ? 'MONITOR' : 'IDLE'}</div>`;
+      }).join('');
+    }
     pillLights.textContent = 'LIGHTS ' + (lightsOn ? 'ON' : 'OFF');
     pillLights.classList.toggle('on', lightsOn);
     pillLight.textContent = 'DAYLIGHT ' + Math.round(naturalLight) + '% ' + (roomDim ? 'DIM' : 'BRIGHT');
     pillLight.classList.toggle('hot', roomDim);
 
-    // zone fans: only spin over a row that actually has someone seated, and only while cooling is called for
+    // Two fans per row. Occupancy is enough to activate the local fans; AC adds a thermal threshold.
     let fansOn = 0;
-    fans.forEach((fan, zoneIdx) => {
-      const zoneSeated = ZONE_SEATS[zoneIdx].some(seatOn);
-      fan.targetSpeed = (zoneSeated && needsCooling) ? 0.09 : 0;
-      if (fan.targetSpeed > 0) fansOn++;
+    fans.forEach(fan => {
+      const active = zoneStates[fan.zone].occupied;
+      fan.targetSpeed = active ? 0.09 : 0;
+      if (active) fansOn++;
     });
     pillFan.textContent = 'FAN ' + fansOn + '/' + fans.length;
     pillFan.classList.toggle('on', fansOn > 0);
 
-    pillAc.textContent = 'AC ' + (acOn ? 'ON' : 'OFF');
-    pillAc.classList.toggle('on', acOn);
+    // Two lights per row. Occupied rows receive light only when daylight is insufficient.
+    rowLights.forEach(rowLight => {
+      const active = zoneStates[rowLight.zone].occupied && roomDim;
+      rowLight.target = active ? 1.0 : 0;
+      rowLight.mesh.material.emissive.setHex(active ? 0xffefb0 : 0x000000);
+      rowLight.mesh.material.emissiveIntensity = active ? 1.4 : 0;
+    });
+
+    // One AC per row. This is the key spatial-control output: an occupied hot row
+    // can call its own AC while empty rows remain off.
+    let acZonesOn = 0;
+    acZones.forEach((zone, rowIdx) => {
+      const active = zoneStates[rowIdx].cooling && (acOverride === null ? true : acOverride);
+      zone.target = active ? 1 : 0;
+      if (active) acZonesOn++;
+      zone.ledMat.emissive.setHex(active ? 0x49e0ff : 0x000000);
+      zone.ledMat.emissiveIntensity = active ? 1.3 : 0;
+      zone.ventMat.emissive.setHex(active ? 0x8fd9ff : 0x000000);
+      zone.ventMat.emissiveIntensity = active ? 0.5 : 0;
+    });
+    const anyAc = acZonesOn > 0;
+    pillAc.textContent = 'AC ' + (anyAc ? 'ON ' + acZonesOn + '/5' : 'OFF');
+    pillAc.classList.toggle('on', anyAc);
     pillTemp.textContent = roomTemp.toFixed(1) + '°C';
     pillTemp.classList.toggle('hot', roomTemp > acThreshold);
 
-    acNote.textContent = `AC threshold ${acThreshold}°C while ${roomOccupied ? 'occupied' : 'vacant'}`
-      + (acOverride !== null ? ` — manual override: forced ${acOverride ? 'on' : 'off'}` : '');
+    acNote.textContent = `${acZonesOn}/5 AC zones active • threshold ${acThreshold}°C`
+      + (acOverride !== null ? ` • manual ${acOverride ? 'ON' : 'OFF'}` : ' • automatic');
 
     setLed(relayLEDs[0], lightsOn);
-    setLed(relayLEDs[1], acOn);
-
+    setLed(relayLEDs[1], anyAc);
     fixtureTargetIntensity = lightsOn ? 1.3 : 0;
-
-    acLedMat.emissive.setHex(acOn ? 0x49e0ff : 0x000000);
-    acLedMat.emissiveIntensity = acOn ? 1.3 : 0;
-    acVentMat.emissive.setHex(acOn ? 0x8fd9ff : 0x000000);
-    acVentMat.emissiveIntensity = acOn ? 0.5 : 0;
   }
 
   function flashPIR() { pirFlashUntil = performance.now() + 450; }
@@ -777,9 +832,14 @@
 
   function setPersonIn(v) {
     personIn = v;
-    manualOverride.fill(null); // the global toggle resets any per-seat overrides
-    people.forEach(p => { p.visible = true; }); // animate loop hides any that end up targeting 0
+    manualOverride.fill(null); // demo motion sensor controls all seats at once
+    if (v) { selectedSeats.clear(); for (let i = 0; i < DESKS.length; i++) selectedSeats.add(i); }
+    else selectedSeats.clear();
+    people.forEach(p => { p.visible = true; });
     refreshSeats();
+    renderSeatMap();
+    peopleCountInput.value = v ? DESKS.length : 0;
+    occupancyPayload.value = JSON.stringify({ people: v ? DESKS.length : 0, seats: v ? DESKS.map((_,i)=>seatId(i)) : [] });
     personBtn.textContent = 'Person in room: ' + (v ? 'ON' : 'OFF');
     personBtn.classList.toggle('on', v);
     if (pulseInterval) { clearInterval(pulseInterval); pulseInterval = null; }
@@ -788,6 +848,77 @@
       pulseInterval = setInterval(pulseMotion, 1400);
     }
   }
+
+  // ---------- external occupancy payload / seat-map input ----------
+  const peopleCountInput = document.getElementById('peopleCount');
+  const seatMapEl = document.getElementById('seatMap');
+  const occupancyPayload = document.getElementById('occupancyPayload');
+  const selectedSeats = new Set();
+
+  function seatId(index) {
+    const row = Math.floor(index / 6) + 1;
+    const seat = (index % 6) + 1;
+    return `R${row}S${seat}`;
+  }
+  function seatIndexFromId(id) {
+    const m = /^R([1-5])S([1-6])$/i.exec(String(id).trim());
+    return m ? (Number(m[1]) - 1) * 6 + (Number(m[2]) - 1) : -1;
+  }
+  function renderSeatMap() {
+    seatMapEl.innerHTML = '';
+    for (let i = 0; i < DESKS.length; i++) {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'seat-btn'; b.dataset.index = i;
+      b.innerHTML = `<span class="seat-row">R${Math.floor(i/6)+1}</span>S${i%6+1}`;
+      b.classList.toggle('selected', selectedSeats.has(i));
+      b.addEventListener('click', () => {
+        if (selectedSeats.has(i)) selectedSeats.delete(i);
+        else selectedSeats.add(i);
+        peopleCountInput.value = selectedSeats.size;
+        renderSeatMap();
+      });
+      seatMapEl.appendChild(b);
+    }
+  }
+  function applySeatSelection(indices) {
+    personIn = false;
+    acOverride = null;
+    acModeBtn.textContent = 'AC: Auto';
+    acModeBtn.classList.remove('on');
+    if (pulseInterval) { clearInterval(pulseInterval); pulseInterval = null; }
+    manualOverride.fill(false);
+    selectedSeats.clear();
+    indices.slice(0, DESKS.length).forEach(i => { if (i >= 0 && i < DESKS.length) { manualOverride[i] = true; selectedSeats.add(i); } });
+    peopleCountInput.value = selectedSeats.size;
+    refreshSeats();
+    renderSeatMap();
+    occupancyPayload.value = JSON.stringify({ people: selectedSeats.size, seats: [...selectedSeats].map(seatId) });
+    if (selectedSeats.size) pulseMotion();
+    updateDerived();
+  }
+  function applyPeopleCount() {
+    const count = Math.max(0, Math.min(30, Number(peopleCountInput.value) || 0));
+    const current = [...selectedSeats];
+    const indices = current.length ? current.slice(0, count) : Array.from({length: count}, (_, i) => i);
+    applySeatSelection(indices);
+  }
+  function applyPayload() {
+    try {
+      const data = JSON.parse(occupancyPayload.value);
+      const seats = Array.isArray(data.seats) ? data.seats.map(seatIndexFromId).filter(i => i >= 0) : [];
+      const count = Math.max(0, Math.min(30, Number(data.people) || seats.length));
+      applySeatSelection(seats.slice(0, count));
+    } catch (err) {
+      occupancyPayload.setCustomValidity('Use JSON like {"people":2,"seats":["R1S2","R4S5"]}');
+      occupancyPayload.reportValidity();
+      return;
+    }
+    occupancyPayload.setCustomValidity('');
+  }
+  renderSeatMap();
+  document.getElementById('applyCountBtn').addEventListener('click', applyPeopleCount);
+  document.getElementById('clearSeatsBtn').addEventListener('click', () => applySeatSelection([]));
+  document.getElementById('applyPayloadBtn').addEventListener('click', applyPayload);
 
   personBtn.addEventListener('click', () => setPersonIn(!personIn));
   brightenBtn.addEventListener('click', () => { naturalLight = Math.min(LIGHT_MAX, naturalLight + 15); updateDerived(); });
@@ -805,17 +936,116 @@
   document.getElementById('scenBottomRightBtn').addEventListener('click', () => applyScenario(ZONE_SEATS[3].slice(0, 2)));
   document.getElementById('scenMiddleBtn').addEventListener('click', () => applyScenario(ZONE_SEATS[4]));
   document.getElementById('scenScatteredBtn').addEventListener('click', () => applyScenario(ZONE_SEATS.map(z => z[0])));
+  document.getElementById('scenOneRowBtn').addEventListener('click', () => applyScenario(ZONE_SEATS[2]));
+
+  // ---------- proof-oriented real-world use cases ----------
+  // These are demonstration presets built from the same inputs/outputs as the
+  // live simulation. The copy deliberately describes the observed behavior,
+  // rather than claiming measured energy savings that this prototype has not measured.
+  const proofCards = [...document.querySelectorAll('.usecase-card')];
+  const proofStatus = document.getElementById('proofStatus');
+  const proofTitle = document.getElementById('proofTitle');
+  const proofCopy = document.getElementById('proofCopy');
+  const proofMetrics = document.getElementById('proofMetrics');
+
+  const USE_CASES = {
+    empty: {
+      title: 'After class: stop conditioning an empty room',
+      copy: 'PIR detects that people have left. With no occupied seats, the prototype keeps lights and active cooling off instead of conditioning the room unnecessarily.',
+      status: 'AUTOMATION / OCCUPANCY',
+      metrics: ['0/30 seats', '0/5 cooling zones', 'Lights OFF', 'AC OFF']
+    },
+    partial: {
+      title: 'Half-full class: cool where people actually are',
+      copy: 'Students are concentrated in one physical row. The row-level logic spins that row fan while the other four rows remain idle, demonstrating targeted rather than whole-room cooling.',
+      status: 'TARGETED CONTROL / ZONING',
+      metrics: ['1 active row', '4 occupied seats', '4 fans OFF', 'Cooling = demand-led']
+    },
+    daylight: {
+      title: 'Daylight harvesting: don’t turn lights on when sunlight is enough',
+      copy: 'The LDR reports bright natural light while the room is occupied. The lighting rule keeps artificial lights off, using daylight as the first source.',
+      status: 'AUTOMATION / DAYLIGHT',
+      metrics: ['Daylight 85%', 'Lights OFF', 'Room occupied', 'LDR = decision input']
+    },
+    heat: {
+      title: 'Hot afternoon: respond to real classroom demand',
+      copy: 'A full class raises the simulated thermal load. When temperature crosses the occupied threshold, cooling activates across occupied zones and the AC relay turns on.',
+      status: 'AUTOMATION / THERMAL LOAD',
+      metrics: ['30/30 seats', '5/5 zones', 'AC ON', 'Fans ON']
+    },
+    air: {
+      title: 'Air-quality watch: surface a problem before ignoring it',
+      copy: 'The MQ gas sensor can provide an air-quality signal alongside occupancy and climate telemetry. In this prototype the response is an advisory alert—not an invented automatic ventilation action.',
+      status: 'MONITORING / AIR QUALITY',
+      metrics: ['8 occupied seats', 'Gas sensor HIGH', 'Human review', 'No automatic vent claim']
+    }
+  };
+
+  function renderProofMetrics(items) {
+    proofMetrics.innerHTML = items.map(item => {
+      const parts = item.split(' ');
+      return `<span class="proof-metric">${parts.length > 1 ? '<strong>' + parts[0] + '</strong> ' + parts.slice(1).join(' ') : '<strong>' + item + '</strong>'}</span>`;
+    }).join('');
+  }
+
+  function activateUseCase(key) {
+    const c = USE_CASES[key];
+    if (!c) return;
+    proofCards.forEach(card => card.classList.toggle('active', card.dataset.usecase === key));
+    proofStatus.textContent = c.status;
+    proofTitle.textContent = c.title;
+    proofCopy.textContent = c.copy;
+    renderProofMetrics(c.metrics);
+
+    airQualityRisk = key === 'air';
+
+    if (key === 'empty') {
+      applyScenario([]);
+      naturalLight = 60;
+      roomTemp = 24;
+    } else if (key === 'partial') {
+      applyScenario(ZONE_SEATS[3].slice(0, 4));
+      naturalLight = 55;
+      roomTemp = 29;
+    } else if (key === 'daylight') {
+      applyScenario([ZONE_SEATS[0][0], ZONE_SEATS[1][0], ZONE_SEATS[2][0], ZONE_SEATS[3][0]]);
+      naturalLight = 85;
+      roomTemp = 24;
+    } else if (key === 'heat') {
+      applyScenario(DESKS.map((_, i) => i));
+      naturalLight = 55;
+      roomTemp = 32;
+    } else if (key === 'air') {
+      applyScenario([ZONE_SEATS[0][0], ZONE_SEATS[0][1], ZONE_SEATS[1][0], ZONE_SEATS[1][1],
+        ZONE_SEATS[2][0], ZONE_SEATS[2][1], ZONE_SEATS[3][0], ZONE_SEATS[3][1]]);
+      naturalLight = 55;
+      roomTemp = 26;
+    }
+    updateDerived();
+  }
+
+  proofCards.forEach(card => card.addEventListener('click', () => activateUseCase(card.dataset.usecase)));
 
   function resetSimulation() {
     if (pulseInterval) { clearInterval(pulseInterval); pulseInterval = null; }
     personIn = false;
     manualOverride.fill(null);
+    selectedSeats.clear();
     refreshSeats();
+    renderSeatMap();
+    peopleCountInput.value = 0;
+    occupancyPayload.value = JSON.stringify({people:0,seats:[]});
     personBtn.textContent = 'Person in room: OFF';
     personBtn.classList.remove('on');
     naturalLight = LIGHT_BASE;
     roomTemp = 24;
     acOverride = null;
+    airQualityRisk = false;
+    proofCards.forEach(card => card.classList.remove('active'));
+    proofStatus.textContent = 'SELECT A USE CASE';
+    proofTitle.textContent = 'See the system make a decision';
+    proofCopy.textContent = 'Each case connects a classroom problem to sensor input, an automated decision, and the physical response shown in the 3D model.';
+    proofMetrics.innerHTML = '';
     acModeBtn.textContent = 'AC: Auto';
     acModeBtn.classList.remove('on');
     occupied = false;
@@ -933,7 +1163,13 @@
 
     // ceiling fixture: ease light + emissive toward target
     fixtureLight.intensity += (fixtureTargetIntensity - fixtureLight.intensity) * 0.08;
-    fixtureMesh.material.emissiveIntensity += (fixtureTargetIntensity - fixtureMesh.material.emissiveIntensity) * 0.08;
+    rowLights.forEach(rowLight => {
+      rowLight.light.intensity += (rowLight.target * 1.8 - rowLight.light.intensity) * 0.08;
+    });
+    acZones.forEach(zone => {
+      zone.target = zone.target || 0;
+      zone.group.position.x += ((ROOM.halfW - 18) - zone.group.position.x) * 0.08;
+    });
 
     // people: ease each seat's scale toward its own target, hide once fully shrunk
     people.forEach(p => {

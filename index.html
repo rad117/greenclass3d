@@ -30,7 +30,21 @@
 
     <div class="sim-panel">
     <h2>Live logic</h2>
-    <button class="ctrl-btn wide" id="personBtn" type="button">Person in room: OFF</button>
+    <div class="occupancy-input">
+      <div class="input-head"><span>Occupancy input</span><small>Send people + exact seat positions</small></div>
+      <div class="input-row">
+        <label>People <input id="peopleCount" type="number" min="0" max="30" value="6" /></label>
+        <button class="chip primary" id="applyCountBtn" type="button">Place people</button>
+        <button class="chip" id="clearSeatsBtn" type="button">Clear</button>
+      </div>
+      <div class="seat-map" id="seatMap" aria-label="Classroom seat map"></div>
+      <div class="input-row">
+        <input class="payload-input" id="occupancyPayload" value='{"people":6,"seats":["R1S2","R2S3","R2S4","R3S2","R4S5","R5S3"]}' aria-label="Occupancy JSON payload" />
+        <button class="chip primary" id="applyPayloadBtn" type="button">Apply data</button>
+      </div>
+      <p class="sim-note">Seat map = R1–R5 × S1–S6. In a real build this payload can come from the ESP32 / camera / people-counting model.</p>
+    </div>
+    <button class="ctrl-btn wide" id="personBtn" type="button">Demo motion sensor: OFF</button>
     <div class="cond-row">
       <button class="chip" id="brightenBtn" type="button">Brighten +15%</button>
       <button class="chip" id="dimBtn" type="button">Dim -15%</button>
@@ -51,12 +65,42 @@
     </div>
     <p class="sim-note" id="acNote"></p>
     <p class="sim-note" id="simNote"></p>
+    <div class="row-status" id="rowStatus"></div>
     <h2>Scenarios</h2>
     <div class="cond-row">
       <button class="chip" id="scenEmptyBtn" type="button">Empty room</button>
-      <button class="chip" id="scenBottomRightBtn" type="button">2 in bottom-right</button>
-      <button class="chip" id="scenMiddleBtn" type="button">Middle only</button>
-      <button class="chip" id="scenScatteredBtn" type="button">Scattered (1/zone)</button>
+      <button class="chip" id="scenBottomRightBtn" type="button">Row 5 only</button>
+      <button class="chip" id="scenMiddleBtn" type="button">Row 3 only</button>
+      <button class="chip" id="scenScatteredBtn" type="button">Scattered seats</button>
+      <button class="chip" id="scenOneRowBtn" type="button">One full row</button>
+    </div>
+
+    <div class="proof-head">
+      <h2>Proof in practice</h2>
+      <span class="proof-kicker">REAL-WORLD USE CASES</span>
+    </div>
+    <div class="usecase-grid" id="usecaseGrid">
+      <button class="usecase-card" data-usecase="empty" type="button">
+        <span class="uc-icon">01</span><span><b>After class</b><small>Room empties → lights & cooling shut down</small></span>
+      </button>
+      <button class="usecase-card" data-usecase="partial" type="button">
+        <span class="uc-icon">02</span><span><b>Partial occupancy</b><small>Cool occupied zones instead of the whole room</small></span>
+      </button>
+      <button class="usecase-card" data-usecase="daylight" type="button">
+        <span class="uc-icon">03</span><span><b>Daylight harvesting</b><small>Use natural light when the room is bright enough</small></span>
+      </button>
+      <button class="usecase-card" data-usecase="heat" type="button">
+        <span class="uc-icon">04</span><span><b>Hot afternoon</b><small>High occupancy + heat → cooling responds automatically</small></span>
+      </button>
+      <button class="usecase-card" data-usecase="air" type="button">
+        <span class="uc-icon">05</span><span><b>Air-quality watch</b><small>Gas sensor flags a condition for human action</small></span>
+      </button>
+    </div>
+    <div class="proof-result" id="proofResult" aria-live="polite">
+      <div class="proof-status" id="proofStatus">SELECT A USE CASE</div>
+      <div class="proof-title" id="proofTitle">See the system make a decision</div>
+      <div class="proof-copy" id="proofCopy">Each case connects a classroom problem to sensor input, an automated decision, and the physical response shown in the 3D model.</div>
+      <div class="proof-metrics" id="proofMetrics"></div>
     </div>
     </div>
   </div>
